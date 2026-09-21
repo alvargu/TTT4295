@@ -8,7 +8,9 @@ import scipy.io.wavfile as wav
 import numpy as np
 
 # Read the audio file
-audioFilePath = "MusicBoxNotes_fixed.wav"
+# Needed to fix the header of the wav file as it was recorded in stereo 
+# format which is not supported by scipy.io.wavfile.read().
+audioFilePath = "MusicBoxNotes_fixed.wav" 
 fs, audioRecording = wav.read(audioFilePath)
 # My audio file is stereo, so I will take only one channel for analysis
 monoRecording = audioRecording[:, 0]
