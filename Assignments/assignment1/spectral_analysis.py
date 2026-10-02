@@ -9,53 +9,54 @@ MB_audioNotes = [None] * 34
 # Found by running audio_signal.py and checking the using the samplenumber 
 # for the time axis instead of the time in seconds.
 MB_audioNotesPos = [
-     [85000, 240000],
-     [247000, 403000],
-     [512, 1200],
-     [1200, 3000],
-     [3000, 5000],
-     [5000, 7000],
-     [7000, 9000],
-     [9000, 11000],
-     [11000, 13000],
-     [13000, 15000],
-     [15000, 17000],
-     [17000, 19000],
-     [19000, 21000],
-     [21000, 23000],
-     [23000, 25000],
-     [25000, 27000],
-     [27000, 29000],
-     [29000, 31000],
-     [31000, 33000],
-     [33000, 35000],
-     [35000, 37000],
-     [37000, 39000],
-     [39000, 41000],
-     [41000, 43000],
-     [43000, 45000],
-     [45000, 47000],
-     [47000, 49000],
-     [49000, 51000],
-     [51000, 53000],
-     [53000, 55000],
-     [55000, 57000],
-     [57000, 59000],
-     [59000, 61000],
-     [61000, 63000]
+     [144000, 320000],
+     [320000, 500000],
+     [504000, 625000],
+     [625000, 744000],
+     [744000, 917000],
+     [917000, 1063000],
+     [1075000, 1266000],
+     [1266000, 1410000],
+     [1410000, 1600000],
+     [1600000, 1800000],
+     [1800000, 2026000],
+     [2026000, 2235000],
+     [2235000, 2443000],
+     [2443000, 2595000],
+     [2595000, 2705000],
+     [2705000, 2863000],
+     [2863000, 3034000],
+     [3034000, 3244000],
+     [3244000, 3460000],
+     [3460000, 3625000],
+     [3625000, 3766000],
+     [3766000, 3950000],
+     [3950000, 4085000],
+     [4085000, 4255000],
+     [4255000, 4420000],
+     [4420000, 4570000],
+     [4570000, 4745000],
+     [4745000, 4926000],
+     [4926000, 5054000],
+     [5054000, 5185000],
+     [5185000, 5361000],
+     [5361000, 5508000],
+     [5508000, 5695000],
+     [5695000, 5770000]
 ]
 
 # Compute the FFT for each of the notes with zero-padding.
 def multi_fft(audioSignals, n):
+     audioSignalsFFT = [None] * len(audioSignals)
      for i in range(len(audioSignals)):
-          audioSignalsFFT = scipy.fft.fft(audioSignals[i, :], n=n)
+          audioSignalsFFT[i] = scipy.fft.fft(audioSignals[i], n=n)
      return audioSignalsFFT
 
 # Generates a fig containing the audiosignal with markers for the start and end of 
 # the specific note, as well as the FFT of the audio signal.
 def plot_note_params(t, audioSignal, f, audioNoteFFT):
      # Define the figure with its subplots for plotting
-     fig, axs = plt.subplots(2, 1, figsize=(24, 12))
+     fig, axs = plt.subplots(2, 1, figsize=(16, 8))
      # Plot the audio signal in the time domain subplot
      axs[0].plot(t, audioSignal)
      # Add vertical lines to indicate the start and end of the note in the time domain plot
@@ -70,6 +71,8 @@ def plot_note_params(t, audioSignal, f, audioNoteFFT):
      axs[0].set_ylabel("Amplitude")
      axs[0].set_title("Audio Signal")
 
+     # axs[1] frequency-axis should be logarithmic scale
+     axs[1].set_xscale('log')
      # Plot the FFT of the audio signal in the frequency domain subplot
      axs[1].plot(f, np.abs(audioNoteFFT[:len(audioNoteFFT)//2 + 1]))
      # Labeling for the axes and the plot itself
@@ -78,7 +81,7 @@ def plot_note_params(t, audioSignal, f, audioNoteFFT):
      axs[1].set_title("Frequency Spectrum")
      # Save and display the plot
      plt.tight_layout()
-     plt.savefig("spectral_analysis.png")
+     plt.savefig("spectral_analysis.svg")
      plt.show()
      return
 
@@ -92,9 +95,13 @@ for i in range(len(MB_audioNotesPos)):
 
 # Find the length of the longest note for zero-padding
 n = len(max(MB_audioNotes, key=len))
+# Now have what we need to find the frequency resolution of the FFT
+freqResolution = fs/n
+# Output the result 
+print(f"Frequency resolution: {freqResolution:.2f} Hz")
 # Compute the FFT for each of the notes
 MB_audioNotesFFT = multi_fft(MB_audioNotes, n)
-f = np.linspace(0, fs/2, len(MB_audioNotesFFT)//2 + 1)
+f = np.linspace(0, fs/2, n//2 + 1)
 
 ### Using selfdefined function to plot the audio signal and its FFT for 
 ### the first note to have example for small delivery.
