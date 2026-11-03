@@ -95,6 +95,22 @@ def source_signal_generator(fs, duration, noise_burst_duration):
      return np.void
 
 
+def octave_notes_synthesis(samplingFrequency=fs, filename='music_notes_synthesis.wav'):
+     # Initialize empty array for musical notes and a space of silence between them
+     space = np.zeros(int(fs/2))
+     musical_notes = np.array([])
+     # Generate a tone for each semitone
+     for i in range(13):
+          freq = 440 * 2**(i/12) # Frequency for said tone starting from A_440Hz
+          tone = simple_1D_digital_waveguide(freq)
+          musical_notes = np.append(musical_notes, tone)
+          # Add spaces after the first 12 notes
+          if i >= 12: break
+          musical_notes = np.append(musical_notes, space)
+     
+     write_to_wav(musical_notes, filename=filename)
+     return np.void
+
 # Task 6
 def loop_filter_delay(x, fs, delay_time):
      return np.void
