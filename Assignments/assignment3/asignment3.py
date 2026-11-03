@@ -13,35 +13,39 @@ fs = 44100  # Sampling frequency
 # n = 44100     # Number of samples
 ref_co = 0.98  # Reflection coefficient for the digital waveguide
 
-def write_to_wav(waveform, fs=fs, filename='NotAssigned.wav'):
-     wavfile.write(filename, fs, (waveform * 32767).astype(np.int16))
+def write_to_wav(waveform, fs=fs, filename='NotAssigned.wav', filepath = 'C:/Users/Alvar/Documents/00_Skole/TTT4295/Assignments/assignment3/'):
+     # normalize
+     waveform = waveform / np.max(np.abs(waveform))
+     wavfile.write(filepath + filename, fs, (waveform * 32767 * 0.9).astype(np.int16))
      return np.void
 
 # Task 1:
 def simple_1D_digital_waveguide(f, ref_co=ref_co, fs=fs):
      # Generate tone for the given frequency
      # N samples for full period
-     N = int(np.round(f / fs))
-     # Amount of periods of the tone needed for 40dB decay
-     K = int(np.ceil(40 / (20 * np.log10(ref_co))) / N) 
+     N = int(np.round(fs / f))
+     # Amount of samples of the tone needed for 40dB decay
+     periods = int(np.ceil(-40 / (20 * np.log10(ref_co))))
+     K = periods * N
+     
      # Filter parameters
-     B = 1
+     B = 1.0
      A = np.zeros(N + 1)
      A[0] = 1
      A[N] = -ref_co
      
-     t = np.linspace(0, K / fs, K)
-     tone = np.linspace(0, N / fs, N)
-     tone[0] = 1
-     tone = lfilter(B, A, tone)
+     t = np.linspace(0, K / fs, K + 1)
+     pulse = np.zeros(K + 1)
+     pulse[0] = 1
+     tone = lfilter(B, A, pulse)
      return t, tone
 
-def pulse_train_generation(f, samplingFrequency=fs):
+def pulse_train_plot(f, samplingFrequency=fs):
      # Synthesize a pulse train signal for input frequency f using the digital waveguide model
      t, dwg_signal = simple_1D_digital_waveguide(f, ref_co, samplingFrequency)
      
      plt.figure(figsize=(10, 4))
-     plt.plot(t, np.log(np.abs(dwg_signal)))
+     plt.plot(t, dwg_signal)
      plt.xlabel('Time [s]')
      plt.ylabel('Amplitude')
      plt.title('Pulse Train Signal')
@@ -50,23 +54,25 @@ def pulse_train_generation(f, samplingFrequency=fs):
      return np.void
 
 f_A = 440  # Frequency of note A
-pulse_train_generation(f_A, ref_co)
+pulse_train_plot(f_A, ref_co)
 
 # Synthesizing octave notes using the digital waveguide model
-def octave_notes_synthesis(samplingFrequency=fs, filename='music notes synthesis.wav'):
-     space = np.zeros(fs/2)
+def simple_octave_notes_synthesis(samplingFrequency=fs, filename='music_notes_synthesis.wav'):
+     space = np.zeros(int(fs/2))
      musical_notes = np.array([])
+     # Generate a tone for each semitone
      for i in range(13):
-          freq = 440 * 2**(i/12)
+          freq = 440 * 2**(i/12) # Frequency for said tone starting from A_440Hz
           tone = simple_1D_digital_waveguide(freq)
           musical_notes = np.append(musical_notes, tone)
+          # Add spaces after the first 12 notes
           if i >= 12: break
           musical_notes = np.append(musical_notes, space)
      
      write_to_wav(musical_notes, filename=filename)
      return np.void
 
-octave_notes_synthesis()
+simple_octave_notes_synthesis()
 
 # Task 2:
 def fractional_delay_filter(x, delay):
